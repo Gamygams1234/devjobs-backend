@@ -29,11 +29,14 @@ const adminSchema = new Schema({
     default: "admin",
   },
   companyPhone: {
-    type: String
+    type: String,
   },
   website: {
     type: String,
   },
+ 
+
+  
 });
 
 const Admin = User.discriminator("Admin", adminSchema);

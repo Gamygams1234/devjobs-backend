@@ -4,6 +4,7 @@ const verifyToken = require("../middleware/verifyToken");
 const Admin = require("../models/Admin");
 const User = require("../models/User");
 const Job = require("../models/Job");
+const Candidate = require("../models/Candidate");
 
 // GET /
 router.get("/", function (req, res) {
@@ -33,16 +34,73 @@ router.get("/all", async (req, res) => {
   }
 });
 
-
-router.get("/findone/:id", async(req, res)=>{
+router.get("/findone/:id", async (req, res) => {
   try {
-    const id = req.params.id 
+    const id = req.params.id;
     const job = await Job.findById(id).populate("company");
+
     res.json(job);
   } catch (err) {
     res.status(400).json({ message: "Could not find job." });
   }
+});
+router.get("/applicants/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const job = await Job.findById(id)
+      .populate("company")
+      .populate({
+        path: "applicants",
+        populate: {
+          path: "applicant",
+          model: "Candidate",
+        },
+      });
+    res.json(job.applicants);
+  } catch (err) {
+    res.status(400).json({ message: "Could not find job." });
+  }
+});
 
-})
+router.put("/apply/:id", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const id = req.params.id;
+    const job = await Job.findById(id);
+    const user = await Candidate.findById(userId);
+    console.log(user, "before");
+    job.applicants.push({ applicant: userId });
+    user.jobsApplied.push(id);
+    await job.save();
+    await user.save();
+    console.log(user, "after");
+    res.status(201).json({ message: "Application submitted successfully" });
+  } catch (err) {
+    res.status(400).json({ message: "There was an error processing the request." });
+  }
+});
+
+router.get("/findbyuser/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const candidate = await Candidate.findById(id);
+    const jobIds = candidate.jobsApplied;
+    Job.find({ _id: { $in: jobIds } })
+      .populate("company") // Populate appliedJobs field in User model
+      .exec((err, jobs) => {
+        if (err) {
+          console.error(err);
+          // Handle error
+        } else {
+          // Do something with the populated jobs
+          res.json(jobs);
+        }
+      });
+
+    // res.json(candidate.jobsApplied);
+  } catch (err) {
+    res.status(400).json({ message: "Could not find user." });
+  }
+});
 
 module.exports = router;

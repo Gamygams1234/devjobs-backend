@@ -22,8 +22,8 @@ router.get("/", function (req, res) {
 
 // Post Create User/
 router.post("/create/candidate", upload.single("profilePicture"), function (req, res, next) {
-  const { firstName, lastName, email, password } = req.body;
-  console.log({ firstName, lastName, email, password });
+  const { firstName, lastName, email, password, workExperiences } = req.body;
+  // console.log({ firstName, lastName, email, password , workExperiences});
 
   if (firstName && lastName && email && password) {
     let userData = {
@@ -31,7 +31,8 @@ router.post("/create/candidate", upload.single("profilePicture"), function (req,
       firstName,
       lastName,
       password,
-    };
+      workExperiences:JSON.parse( workExperiences)
+    }
     if (req.file) {
       userData.profilePicture = req.file.buffer;
     }
@@ -71,7 +72,7 @@ router.post("/create/candidate", upload.single("profilePicture"), function (req,
 
 // Post Create User/
 router.post("/create/admin", upload.single("companyImage"), function (req, res, next) {
-  const { email, password, website, companyName, backgroundColor, companyLocation } = req.body;
+  const { email, password, website, companyName, backgroundColor, companyLocation, portfolioWebsite } = req.body;
 
   if (email && password && companyName && website) {
     let userData = {
@@ -84,11 +85,11 @@ router.post("/create/admin", upload.single("companyImage"), function (req, res, 
     }
 
     if (req.file) {
-      data.companyImage = req.file.buffer;
+      userData.companyImage = req.file.buffer;
     }
 
-    if (req.body.website) {
-      userData.website = website;
+    if (req.body.portfolioWebsite) {
+      userData.portfolioWebsite = portfolioWebsite;
     }
     if (req.body.backgroundColor) {
       userData.backgroundColor = backgroundColor;
@@ -114,7 +115,7 @@ router.post("/create/admin", upload.single("companyImage"), function (req, res, 
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
+console.log(req.body)
   User.findOne({ email: email }).exec(function (error, user) {
     if (error) {
       console.error(error);
@@ -161,7 +162,7 @@ router.get("/users/:id", (req, res) => {
         res.send(data);
       } else {
         let data = user;
-        console.log(data, "no Image");
+      
         res.send(data);
       }
     }
@@ -172,16 +173,16 @@ router.put("/update/candidate", verifyToken, upload.single("profilePicture"), as
   try {
     console.log(req.body, " body");
     console.log(req.user.userId);
-    let { firstName, lastName, email, github, headline, portfolioWebsite, summary, phone, linkedIn } = req.body;
+    let { firstName, lastName, email, github, headline, portfolioWebsite, summary, phone, linkedIn, workExperiences } = req.body;
 
-    let userData = { firstName, lastName, email, github, headline, portfolioWebsite, summary, phone, linkedIn }
+    let userData = { firstName, lastName, email, github, headline, portfolioWebsite, summary, phone, linkedIn, workExperiences: JSON.parse( workExperiences) }
 
     if (req.file) {
       userData.profilePicture = req.file.buffer;
     }
 
     const updatedUser = await Candidate.findByIdAndUpdate(req.user.userId, userData, { new: true });
-    console.log(updatedUser, " updated");
+
     res.json(updatedUser);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -189,13 +190,19 @@ router.put("/update/candidate", verifyToken, upload.single("profilePicture"), as
 });
 // update
 
-router.put("/update/admin", verifyToken, async (req, res) => {
+router.put("/update/admin", verifyToken,upload.single("companyImage"), async (req, res) => {
   try {
-    if (req.body.password) {
-      let passwordHash = await bcrypt.hash(req.body.password, 10);
-      req.body.password = passwordHash;
+  
+    console.log(req.body, " body");
+    let { companyName, backgroundColor, companyLocation,  email, website, companyPhone}  = req.body;
+
+    let userData = { companyName, backgroundColor, companyLocation, email, website, companyPhone} 
+
+    if (req.file) {
+      userData.companyImage = req.file.buffer;
     }
-    const updatedUser = await Admin.findByIdAndUpdate(req.user.id, req.body, { new: true });
+
+    const updatedUser = await Admin.findByIdAndUpdate(req.user.userId, userData, { new: true });
     res.json(updatedUser);
   } catch (err) {
     res.status(400).json({ message: err.message });

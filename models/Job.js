@@ -25,10 +25,18 @@ const jobSchema = new Schema({
     default: Date.now(),
   },
 
-  applicants: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  applicants: [
+    {
+      applicant: { type: Schema.Types.ObjectId, ref: "Candidate" },
+      appliedAt: {
+        type: Date,
+        default: Date.now(),
+      },
+    },
+  ],
   updatedAt: {
     type: Date,
-    default: new Date,
+    default: new Date(),
   },
   description: {
     type: String,
@@ -48,10 +56,10 @@ const jobSchema = new Schema({
   },
   active: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 });
 
-let Job = mongoose.model('Job', jobSchema);
+let Job = mongoose.model("Job", jobSchema);
 
 module.exports = Job;

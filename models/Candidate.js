@@ -4,6 +4,11 @@ const User = require("./User");
 const bcrypt = require("bcryptjs");
 const saltRounds = 10;
 
+const workExperienceSchema = new mongoose.Schema({
+  company: String, position: String, duration: String, description: String
+});
+
+
 const candidateSchema = new Schema({
   firstName: {
     type: String,
@@ -40,6 +45,8 @@ const candidateSchema = new Schema({
   },
   
   jobsApplied: [{ type: Schema.Types.ObjectId, ref: "Job" }],
+  workExperiences: [workExperienceSchema]
+
 
 });
 

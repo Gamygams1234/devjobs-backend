@@ -46,6 +46,7 @@ userSchema.statics.authenticate = function (email, password, callback) {
 // hashing the password
 
 userSchema.pre("save", function (next) {
+  if (!this.isModified('password')) return next();
   var user = this;
   bcrypt.genSalt(saltRounds, function (err, salt) {
     bcrypt.hash(user.password, salt, function (err, hash) {
