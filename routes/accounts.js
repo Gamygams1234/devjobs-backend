@@ -115,7 +115,7 @@ router.post("/create/admin", upload.single("companyImage"), function (req, res, 
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
-console.log(req.body)
+
   User.findOne({ email: email }).exec(function (error, user) {
     if (error) {
       console.error(error);
@@ -155,7 +155,7 @@ router.get("/users", (req, res) => {
 router.get("/users/:id", (req, res) => {
   User.findOne({ _id: req.params.id }, (err, user) => {
     if (err) {
-      console.log(err.message);
+      // console.log(err.message);
     } else {
       if (user.profilePicture) {
         let data = user;
@@ -171,12 +171,39 @@ router.get("/users/:id", (req, res) => {
 // update
 router.put("/update/candidate", verifyToken, upload.single("profilePicture"), async (req, res) => {
   try {
-    console.log(req.body, " body");
-    console.log(req.user.userId);
-    let { firstName, lastName, email, github, headline, portfolioWebsite, summary, phone, linkedIn, workExperiences } = req.body;
+    const { firstName, lastName, email, workExperiences } = req.body;
 
-    let userData = { firstName, lastName, email, github, headline, portfolioWebsite, summary, phone, linkedIn, workExperiences: JSON.parse( workExperiences) }
+      let userData = {
+        email,
+        firstName,
+        lastName,
+        workExperiences:JSON.parse( workExperiences)
+      }
+    if (req.file) {
+      userData.profilePicture = req.file.buffer;
+    }
 
+    if (req.body.phone) {
+      userData.phone = req.body.phone;
+    }
+    if (req.body.website) {
+      userData.website = req.body.website;
+    }
+    if (req.body.portfolioWebsite) {
+      userData.portfolio = req.body.portfolioWebsite;
+    }
+    if (req.body.linkedIn) {
+      userData.linkedIn = req.body.linkedIn;
+    }
+    if (req.body.headline) {
+      userData.headline = req.body.headline;
+    }
+    if (req.body.github) {
+      userData.github = req.body.github;
+    }
+    if (req.body.summary) {
+      userData.summary = req.body.summary;
+    }
     if (req.file) {
       userData.profilePicture = req.file.buffer;
     }
@@ -193,7 +220,7 @@ router.put("/update/candidate", verifyToken, upload.single("profilePicture"), as
 router.put("/update/admin", verifyToken,upload.single("companyImage"), async (req, res) => {
   try {
   
-    console.log(req.body, " body");
+
     let { companyName, backgroundColor, companyLocation,  email, website, companyPhone}  = req.body;
 
     let userData = { companyName, backgroundColor, companyLocation, email, website, companyPhone} 
@@ -202,8 +229,8 @@ router.put("/update/admin", verifyToken,upload.single("companyImage"), async (re
       userData.companyImage = req.file.buffer;
     }
 
-    const updatedUser = await Admin.findByIdAndUpdate(req.user.userId, userData, { new: true });
-    res.json(updatedUser);
+     await Admin.findByIdAndUpdate(req.user.userId, userData, { new: true });
+     res.status(201).json({ message: "User updated successfully" });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }

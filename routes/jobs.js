@@ -68,17 +68,37 @@ router.put("/apply/:id", verifyToken, async (req, res) => {
     const id = req.params.id;
     const job = await Job.findById(id);
     const user = await Candidate.findById(userId);
-    console.log(user, "before");
     job.applicants.push({ applicant: userId });
     user.jobsApplied.push(id);
     await job.save();
     await user.save();
-    console.log(user, "after");
     res.status(201).json({ message: "Application submitted successfully" });
   } catch (err) {
     res.status(400).json({ message: "There was an error processing the request." });
   }
 });
+
+
+router.put("/editjob/:id", verifyToken, async(req, res)=>{
+  try{
+    const userId = req.user.userId;
+    const id = req.params.id;
+    
+
+  
+
+      const { position, contract, postedAt, description, role, requirements } = req.body;
+
+      const userData = { position, contract, postedAt, description, role, requirements };
+    
+       await Job.findByIdAndUpdate(id, userData, { new: true });
+      res.status(201).json({ message: "Job updated sucessfully." });
+
+  }
+  catch (err) {
+    res.status(400).json({ message: "There was an error processing the request." });
+  }
+})
 
 router.get("/findbyuser/:id", async (req, res) => {
   try {

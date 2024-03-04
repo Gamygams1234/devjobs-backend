@@ -20,16 +20,11 @@ const PORT = process.env.PORT || 5000;
 //     next();
 //   });
 
-mongoose.connect("mongodb://localhost:27017/devjob");
+mongoose.connect(process.env.MONGO_URI);
 mongoose.connection.once("open", () => {
   console.log("connected to mongo");
 });
 
-// parse incoming requests
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: false }));
-// MIDDLEWARE
-// MIDDLEWARE
 
 app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: false }));
