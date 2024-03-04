@@ -22,7 +22,7 @@ const jobSchema = new Schema({
   },
   postedAt: {
     type: Date,
-    default: Date.now(),
+    default: new Date.now(),
   },
 
   applicants: [
@@ -30,7 +30,7 @@ const jobSchema = new Schema({
       applicant: { type: Schema.Types.ObjectId, ref: "Candidate" },
       appliedAt: {
         type: Date,
-        default: Date.now(),
+        default: new Date.now(),
       },
     },
   ],
